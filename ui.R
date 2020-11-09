@@ -9,6 +9,10 @@
 #
 #
 library(shiny)
+library(caret)
+library(tidyverse)
+library(DT)
+
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
