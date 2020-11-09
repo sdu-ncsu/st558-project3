@@ -1,16 +1,19 @@
-ST558 Project 3
-================
-Shuang Du
-11/18/2020
+---
+title: "ST558 Project 3"
+author: "Shuang Du"
+date: "11/18/2020"
+output: rmarkdown::github_document
+---
 
 ## The following libraries are required to run this project
 
-``` r
+```{r eval=FALSE}
 library(dplyr)
 ```
 
 ## The following command is what is used to run the file
 
-``` r
+```{r eval=FALSE}
 runGitHub("st558-project3", "sdu-ncsu")
 ```
+
