@@ -8,19 +8,43 @@
 #
 
 library(shiny)
+library(tidyverse);
+library(readxl);
+library(plotly);
+
+
+air <- read_delim("Chicago.csv", delim = ",");
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+    
+    getColData <- reactive({
+        colData <- air %>% select(input$varSum)
+    })
+    
+    output$summaryText <- renderText({
+        #get filtered data
+        summary(getColData())
+    })
+    
 
-    output$distPlot <- renderPlot({
+    
+    output$summaryPlot <- renderPlotly({
 
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        if(input$varSum == 'pm10'){
+            fig <- plot_ly(y = air$pm10, type = "box", quartilemethod="exclusive")
+        } else if (input$varSum == 'dewpoint' ){
+            fig <- plot_ly(y = air$dewpoint, type = "box", quartilemethod="exclusive")
+        } else if (input$varSum == 'temp') {
+            fig <- plot_ly(y = air$temp, type = "box", quartilemethod="exclusive")
+        } else if (input$varSum == 'o3') {
+            fig <- plot_ly(y = air$o3, type = "box", quartilemethod="exclusive")
+        } else if (input$varSum == 'death') {
+            fig <- plot_ly(y = air$death, type = "box", quartilemethod="exclusive")
+        }
+        fig
 
     })
+    
 
 })

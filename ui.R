@@ -19,66 +19,41 @@ library(plotly)
 shinyUI(fluidPage(
 
     # Application title
-    titlePanel("Deaths in Chicago as Affected by Weather"),
+    titlePanel("Death in Chicago"),
 
     tabsetPanel(
-        tabPanel("Map", fluid = TRUE,
-                 sidebarLayout(
-                     sidebarPanel(selectInput("Country", "Select Country", choices = "", selected = "")),
-                     mainPanel(
-                         h3('This data set comes from the '),
-                     )
-                 )
+        tabPanel("Introduction", fluid = TRUE,
+
+                         h2('This app analyzes the chicago data set from st558. The app is divided into different tabs, which a user
+                            may use to navigate'),
+                         h3('The first tab is a data exploration page, which shows common numerical and graphical summaries'),
+                         h3('The second tab contains a clustering analysis where the user can specify aspects of the model'),
+                         h3('The third tab is a page for modelling'),
+                         h3('The fourth tab is a page that allows the user to scroll through the data, subset it, and save the data to a file')
+
         ),
-        tabPanel("plot", fluid = TRUE,
+        tabPanel("Data Exploration", fluid = TRUE,
                  sidebarLayout(
-                     sidebarPanel(sliderInput("year", "Year:", min = 1968, max = 2009, value = 2009, sep='')),
+                     sidebarPanel(
+                         h3('Select the variable to view'),
+                         
+                         selectInput("varSum", "Variables to Summarize",
+                                     c("dewpoint" = "dewpoint",
+                                       "temp" = "temp",
+                                       "pm10" = "pm10",
+                                       "o3" = "o3",
+                                       "death" = "death")),
+                        ),
+                     
                      mainPanel(fluidRow(
-                         column(7,  plotlyOutput("")),
-                         column(5, plotlyOutput(""))   
+                         plotlyOutput(outputId = "summaryPlot"),
+                         textOutput("summaryText"),
+
                      )
                      )
                  )
         )
     )
     
-    # Sidebar with a slider input for number of bins
-    # sidebarLayout(
-    #     sidebarPanel(
-    #         sliderInput("bins",
-    #                     "Number of bins:",
-    #                     min = 1,
-    #                     max = 50,
-    #                     value = 30)
-    #     ),
-    # 
-    #     # Show a plot of the generated distribution
-    #     mainPanel(
-    #         plotOutput("distPlot")
-    #     )
-    # )
 ))
 
-
-ui = fluidPage(
-    tabsetPanel(
-        tabPanel("Map", fluid = TRUE,
-                 sidebarLayout(
-                     sidebarPanel(selectInput("Country", "Select Country", choices = "", selected = "")),
-                     mainPanel(
-                         htmlOutput("Attacks")
-                     )
-                 )
-        ),
-        tabPanel("plot", fluid = TRUE,
-                 sidebarLayout(
-                     sidebarPanel(sliderInput("year", "Year:", min = 1968, max = 2009, value = 2009, sep='')),
-                     mainPanel(fluidRow(
-                         column(7,  plotlyOutput("")),
-                         column(5, plotlyOutput(""))   
-                     )
-                     )
-                 )
-        )
-    )
-)
