@@ -14,6 +14,7 @@ library(tidyverse)
 library(DT)
 library(plotly)
 
+air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time, season, year)) %>% drop_na();
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -35,9 +36,9 @@ shinyUI(fluidPage(
         tabPanel("Data Exploration", fluid = TRUE,
                  sidebarLayout(
                      sidebarPanel(
-                         h3('Select the variable to view'),
+                         h3('Select the variable to summarize'),
                          
-                         selectInput("varSum", "Variables to Summarize",
+                         selectInput("varSum", "Variables",
                                      c("dewpoint" = "dewpoint",
                                        "temp" = "temp",
                                        "pm10" = "pm10",
@@ -49,6 +50,27 @@ shinyUI(fluidPage(
                          plotlyOutput(outputId = "summaryPlot"),
                          textOutput("summaryText"),
 
+                     )
+                     )
+                 )
+        ),
+        
+        tabPanel("Clustering", fluid = TRUE,
+                 sidebarLayout(
+                     sidebarPanel(
+
+                             selectInput('xcol', 'X Variable', names(air)),
+                             selectInput('ycol', 'Y Variable', names(air),
+                                         selected=names(air)[[2]]),
+                             numericInput('clusters', 'Cluster count', 3,
+                                          min = 1, max = 9)
+
+
+                     ),
+                     
+                     mainPanel(fluidRow(
+                         plotOutput('plot1')
+                         
                      )
                      )
                  )

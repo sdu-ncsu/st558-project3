@@ -13,7 +13,7 @@ library(readxl);
 library(plotly);
 
 
-air <- read_delim("Chicago.csv", delim = ",");
+air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time, season, year)) %>% drop_na();
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -27,7 +27,27 @@ shinyServer(function(input, output) {
         summary(getColData())
     })
     
+    selectedClusterData <- reactive({
+        air[, c(input$xcol, input$ycol)]
+    })
+    
+    clusters <- reactive({
+        kmeans(selectedClusterData(), input$clusters)
+    })
+    
 
+    output$plot1 <- renderPlot({
+        palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
+                  "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
+
+        par(mar = c(5.1, 4.1, 0, 1))
+        
+        plot(selectedClusterData(),
+             col = clusters()$cluster)
+        
+        points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+    })
+    
     
     output$summaryPlot <- renderPlotly({
 
