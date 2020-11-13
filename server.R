@@ -18,6 +18,12 @@ air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time,
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
     
+    getLmColData <- reactive({
+        
+        LmColData <- air %>% select(input$xlmcol)
+
+    })
+    
     getColData <- reactive({
         colData <- air %>% select(input$varSum)
     })
@@ -35,6 +41,27 @@ shinyServer(function(input, output) {
         kmeans(selectedClusterData(), input$clusters)
     })
     
+    output$lmResults <- renderUI({
+        # fit <- lm(air$death ~ getLmColData()[[1]])
+        fit <- lm(death ~ eval(parse(text = input$xlmcol)), air)
+        withMathJax(
+            paste0(
+                "Adj. \\( R^2 = \\) ", round(summary(fit)$adj.r.squared, 3),
+                ", \\( \\beta_0 = \\) ", round(fit$coef[[1]], 3),
+                ", \\( \\beta_1 = \\) ", round(fit$coef[[2]], 3)
+            ),
+            br(),
+            if(input$xlmcol == 'temp') {
+                paste0(predict(fit, data.frame( temp = c(input$lmPrediction))))
+            } else if (input$xlmcol == 'pm10') {
+                paste0(predict(fit, data.frame( pm10 = c(input$lmPrediction))))
+            } else if (input$xlmcol == 'o3') {
+                paste0(predict(fit, data.frame( o3 = c(input$lmPrediction))))
+            } else if (input$xlmcol == 'dewpoint') {
+                paste0(predict(fit, data.frame( dewpoint = c(input$lmPrediction))))
+            }
+        )
+    })
 
     output$plot1 <- renderPlot({
         palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",

@@ -74,6 +74,36 @@ shinyUI(fluidPage(
                      )
                      )
                  )
+        ),
+        
+        tabPanel("Modelling", fluid = TRUE,
+                 sidebarLayout(
+                     
+                     sidebarPanel(
+                         HTML('<h3>Models for Predicting <a href="https://en.wikipedia.org/wiki/Death"><strong>Death</strong></a></h3>'),
+                         selectInput("modelType", "Model Type",
+                                     c("Linear Model" = "lm",
+                                       "Random Forest" = "randomForest")
+                                     ),
+                         conditionalPanel(
+                             "input.modelType=='lm'",
+                             selectInput('xlmcol', 'X Variable', names(air)[-1]),
+                             sliderInput("lmPrediction", "Predicted Value of X Variable:",  
+                                         min = 1, max = 150, value = 20)
+                             
+                         ),
+
+                         
+                         
+                         
+                     ),
+                     
+                     mainPanel(fluidRow(
+                         uiOutput("lmResults")
+                         
+                     )
+                     )
+                 )
         )
     )
     
