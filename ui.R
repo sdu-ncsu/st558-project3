@@ -92,6 +92,23 @@ shinyUI(fluidPage(
                                          min = 1, max = 150, value = 20)
                              
                          ),
+                         conditionalPanel(
+                             "input.modelType=='randomForest'",
+                             
+                             sliderInput("mtry", "(mtry) Number of variables to be sampled at each split time",  
+                                         min = 1, max = 6, value = 1),
+                             h4('Parameters for New Prediction'),
+                             sliderInput("rfPredictTemp", "Temperature",  
+                                         min = -3, max = 90, value = 1),
+                             sliderInput("rfPredictPm10", "PM10",  
+                                         min = 0, max = 130, value = 1),
+                             sliderInput("rfPredictO3", "O3",  
+                                         min = 0, max = 55, value = 1),
+                             sliderInput("rfPredictDewpoint", "Dewpoint",  
+                                         min = -10, max = 80, value = 1)
+                             
+                             
+                         ),
 
                          
                          
@@ -99,7 +116,19 @@ shinyUI(fluidPage(
                      ),
                      
                      mainPanel(fluidRow(
-                         uiOutput("lmResults")
+                         conditionalPanel(
+                            "input.modelType=='lm'",
+                            uiOutput("lmResults")
+                         ),
+                         conditionalPanel(
+                             "input.modelType=='randomForest'",
+                             h3("Cross Validated Fit Results on Training Data"),
+                             uiOutput("rfResults"),
+                             h3("Fit Results on Test Data"),
+                             uiOutput("rfTestResults"),
+                             h3('Prediction'),
+                             uiOutput("rfPredictResults")
+                         ),
                          
                      )
                      )

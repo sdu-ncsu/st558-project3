@@ -11,6 +11,7 @@ library(shiny)
 library(tidyverse);
 library(readxl);
 library(plotly);
+library(caret);
 
 
 air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time, season, year)) %>% drop_na();
@@ -41,24 +42,83 @@ shinyServer(function(input, output) {
         kmeans(selectedClusterData(), input$clusters)
     })
     
+    
+    getRfFit <- eventReactive(input$mtry, {
+        set.seed(92)
+        trainIndex <- createDataPartition(air$death, 
+                                          p = 0.8, list = FALSE)
+        
+        airTrain <- air[as.vector(trainIndex),];
+        airTest <- air[-as.vector(trainIndex),];
+        
+        my_grid <- expand.grid(mtry = input$mtry:input$mtry)
+        
+        rfFit <- train(death ~ ., data = airTrain, 
+                       preProcess =c("center", "scale"),
+                       method = "rf",
+                       tuneGrid = my_grid1,
+                       trControl = trainControl(method = "cv", number = 4))
+        
+        testPerformance <- predict(rfFit, newdata = airTest)
+        testResult <- postResample(testPerformance, obs = airTest$death)
+        
+        return(list("fit" = rfFit, "testResult" = testResult))
+        
+    })
+    
+    output$rfResults <- renderDataTable({
+        getRfFit()[[1]]$results
+    })
+    
+    output$rfResults <- renderUI({
+        withMathJax(
+            paste0("RSME = ", getRfFit()[[1]]$results[[2]]),
+            br(),
+            paste0("\\( R^2 = \\)", getRfFit()[[1]]$results[[3]]),
+            br(),
+            paste0("\\( MAE = \\)", getRfFit()[[1]]$results[[4]])
+            
+        )
+    })
+    
+    output$rfTestResults <- renderUI({
+        withMathJax(
+            paste0("RSME = ", getRfFit()[[2]][[1]]),
+            br(),
+            paste0("\\( R^2 = \\)", getRfFit()[[2]][[2]]),
+            br(),
+            paste0("\\( MAE = \\)", getRfFit()[[2]][[3]])
+            
+        )
+    })
+    
+    output$rfPredictResults <- renderUI({
+        
+        newValues = data.frame("death"=100, "temp" = input$rfPredictTemp, "dewpoint" = input$rfPredictDewpoint, "pm10" = input$rfPredictPm10, "o3"=input$rfPredictO3)
+        withMathJax(
+            paste0("Death = ", predict(getRfFit()[[1]], newValues))
+        )
+        })
+    
     output$lmResults <- renderUI({
-        # fit <- lm(air$death ~ getLmColData()[[1]])
         fit <- lm(death ~ eval(parse(text = input$xlmcol)), air)
         withMathJax(
+            h3('Linear Regression Information'),
             paste0(
                 "Adj. \\( R^2 = \\) ", round(summary(fit)$adj.r.squared, 3),
                 ", \\( \\beta_0 = \\) ", round(fit$coef[[1]], 3),
                 ", \\( \\beta_1 = \\) ", round(fit$coef[[2]], 3)
             ),
             br(),
+            h3('Prediction'),
             if(input$xlmcol == 'temp') {
-                paste0(predict(fit, data.frame( temp = c(input$lmPrediction))))
+                paste0("Death = ", predict(fit, data.frame( temp = c(input$lmPrediction))))
             } else if (input$xlmcol == 'pm10') {
-                paste0(predict(fit, data.frame( pm10 = c(input$lmPrediction))))
+                paste0("Death = ",predict(fit, data.frame( pm10 = c(input$lmPrediction))))
             } else if (input$xlmcol == 'o3') {
-                paste0(predict(fit, data.frame( o3 = c(input$lmPrediction))))
+                paste0("Death = ",predict(fit, data.frame( o3 = c(input$lmPrediction))))
             } else if (input$xlmcol == 'dewpoint') {
-                paste0(predict(fit, data.frame( dewpoint = c(input$lmPrediction))))
+                paste0("Death = ",predict(fit, data.frame( dewpoint = c(input$lmPrediction))))
             }
         )
     })
