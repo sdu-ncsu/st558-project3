@@ -13,6 +13,7 @@ library(caret)
 library(tidyverse)
 library(DT)
 library(plotly)
+library(shinycssloaders)
 
 air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time, season, year)) %>% drop_na();
 
@@ -25,12 +26,15 @@ shinyUI(fluidPage(
     tabsetPanel(
         tabPanel("Introduction", fluid = TRUE,
 
-                         h2('This app analyzes the chicago data set from st558. The app is divided into different tabs, which a user
+                         h4('This app analyzes the chicago data set from st558. The app is divided into different tabs, which a user
                             may use to navigate'),
-                         h3('The first tab is a data exploration page, which shows common numerical and graphical summaries'),
-                         h3('The second tab contains a clustering analysis where the user can specify aspects of the model'),
-                         h3('The third tab is a page for modelling'),
-                         h3('The fourth tab is a page that allows the user to scroll through the data, subset it, and save the data to a file')
+                        
+                        HTML('<ul>
+                                <li>The first tab is a data exploration page, which shows common numerical and graphical summaries</li>
+                                <li>The second tab contains a clustering analysis where the user can specify aspects of the model</li>
+                                <li>The third tab is a page for modelling</li>
+                                <li>The fourth tab is a page that allows the user to scroll through the data, subset it, and save the data to a file</li>
+                             </ul>')
 
         ),
         tabPanel("Data Exploration", fluid = TRUE,
@@ -44,7 +48,9 @@ shinyUI(fluidPage(
                                        "pm10" = "pm10",
                                        "o3" = "o3",
                                        "death" = "death")),
-                        ),
+                         checkboxInput("overHundred", "Only values where death is greater than 100", FALSE),
+                         ),
+                        
                      
                      mainPanel(fluidRow(
                          plotlyOutput(outputId = "summaryPlot"),
@@ -123,15 +129,36 @@ shinyUI(fluidPage(
                          conditionalPanel(
                              "input.modelType=='randomForest'",
                              h3("Cross Validated Fit Results on Training Data"),
-                             uiOutput("rfResults"),
+                             uiOutput("rfResults") %>% withSpinner(color="#0dc5c1"),
                              h3("Fit Results on Test Data"),
-                             uiOutput("rfTestResults"),
+                             uiOutput("rfTestResults"), 
                              h3('Prediction'),
-                             uiOutput("rfPredictResults")
+                             uiOutput("rfPredictResults") 
                          ),
                          
                      )
                      )
+                 )
+        ),
+        
+        tabPanel("Data Viewing", fluid = TRUE,
+                 sidebarLayout(
+                     sidebarPanel(
+
+                         selectInput('subsetVar', 'Variable to Subset', names(air)),
+                         radioButtons("logical", "Type of Subset",
+                                      c("Greater Than" = "gt",
+                                        "Less Than" = "lt"
+                                        )),
+                         numericInput("filterValue", "Value:", 10, min = -100, max = 300),
+                         downloadButton("downloadData", "Download")
+
+
+                     ),
+
+                     mainPanel(fluidRow(
+                         dataTableOutput("filteredTable")
+                     ))
                  )
         )
     )

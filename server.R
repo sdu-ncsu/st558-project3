@@ -19,6 +19,15 @@ air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time,
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
     
+    getFilteredData <- reactive({
+        if(input$logical == 'gt') {
+            filteredData <- air %>% filter(eval(parse(text = input$subsetVar)) > input$filterValue)
+        } else {
+            filteredData <- air %>% filter(eval(parse(text = input$subsetVar)) < input$filterValue)
+        }
+            
+    })
+    
     getLmColData <- reactive({
         
         LmColData <- air %>% select(input$xlmcol)
@@ -56,7 +65,7 @@ shinyServer(function(input, output) {
         rfFit <- train(death ~ ., data = airTrain, 
                        preProcess =c("center", "scale"),
                        method = "rf",
-                       tuneGrid = my_grid1,
+                       tuneGrid = my_grid,
                        trControl = trainControl(method = "cv", number = 4))
         
         testPerformance <- predict(rfFit, newdata = airTest)
@@ -138,20 +147,39 @@ shinyServer(function(input, output) {
     
     output$summaryPlot <- renderPlotly({
 
+        if(input$overHundred) {
+            newAir <- air %>% filter(death > 100)
+        } else {
+            newAir <- air
+        }
+        
         if(input$varSum == 'pm10'){
-            fig <- plot_ly(y = air$pm10, type = "box", quartilemethod="exclusive")
+            fig <- plot_ly(y = newAir$pm10, type = "box", quartilemethod="exclusive")
         } else if (input$varSum == 'dewpoint' ){
-            fig <- plot_ly(y = air$dewpoint, type = "box", quartilemethod="exclusive")
+            fig <- plot_ly(y = newAir$dewpoint, type = "box", quartilemethod="exclusive")
         } else if (input$varSum == 'temp') {
-            fig <- plot_ly(y = air$temp, type = "box", quartilemethod="exclusive")
+            fig <- plot_ly(y = newAir$temp, type = "box", quartilemethod="exclusive")
         } else if (input$varSum == 'o3') {
-            fig <- plot_ly(y = air$o3, type = "box", quartilemethod="exclusive")
+            fig <- plot_ly(y = newAir$o3, type = "box", quartilemethod="exclusive")
         } else if (input$varSum == 'death') {
-            fig <- plot_ly(y = air$death, type = "box", quartilemethod="exclusive")
+            fig <- plot_ly(y = newAir$death, type = "box", quartilemethod="exclusive")
         }
         fig
 
     })
+    
+    output$filteredTable <- renderDataTable({
+        getFilteredData()
+    })
+    
+    output$downloadData <- downloadHandler(
+        filename = function() {
+            paste("filtered_data", ".csv", sep = "")
+        },
+        content = function(file) {
+            write.csv(getFilteredData(), file, row.names = FALSE)
+        }
+    )
     
 
 })
