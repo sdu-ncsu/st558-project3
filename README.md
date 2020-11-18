@@ -9,6 +9,17 @@ Shuang Du
 library(dplyr)
 ```
 
+## The following libraries are used in the project
+
+``` r
+library(shiny)
+library(caret)
+library(tidyverse)
+library(DT)
+library(plotly)
+library(shinycssloaders)
+```
+
 ## The following command is what is used to run the file
 
 ``` r

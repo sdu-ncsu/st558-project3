@@ -11,6 +11,18 @@ output: rmarkdown::github_document
 library(dplyr)
 ```
 
+## The following libraries are used in the project
+
+```{r eval=FALSE}
+library(shiny)
+library(caret)
+library(tidyverse)
+library(DT)
+library(plotly)
+library(shinycssloaders)
+```
+
+
 ## The following command is what is used to run the file
 
 ```{r eval=FALSE}
