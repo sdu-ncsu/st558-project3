@@ -43,14 +43,6 @@ shinyServer(function(input, output) {
         summary(getColData())
     })
     
-    selectedClusterData <- reactive({
-        air[, c(input$xcol, input$ycol)]
-    })
-    
-    clusters <- reactive({
-        kmeans(selectedClusterData(), input$clusters)
-    })
-    
     
     getRfFit <- eventReactive(input$mtry, {
         set.seed(92)
@@ -125,23 +117,38 @@ shinyServer(function(input, output) {
             } else if (input$xlmcol == 'pm10') {
                 paste0("Death = ",predict(fit, data.frame( pm10 = c(input$lmPrediction))))
             } else if (input$xlmcol == 'o3') {
-                paste0("Death = ",predict(fit, data.frame( o3 = c(input$lmPrediction))))
             } else if (input$xlmcol == 'dewpoint') {
                 paste0("Death = ",predict(fit, data.frame( dewpoint = c(input$lmPrediction))))
             }
         )
     })
 
-    output$plot1 <- renderPlot({
-        palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
-                  "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
-
-        par(mar = c(5.1, 4.1, 0, 1))
+    
+    
+    output$plot1Plotly <- renderPlotly({
+        selectedClusterData <- air %>% select(input$xcol, input$ycol)
+        selectedClusterData$cluster <- kmeans(selectedClusterData, input$clusters)$cluster
         
-        plot(selectedClusterData(),
-             col = clusters()$cluster)
+        colors <- palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
+                            "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
         
-        points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+        for(i in 1:input$clusters){
+            selectedClusterData$color[selectedClusterData$cluster == i] <- colors[i]
+        }
+        print(selectedClusterData)
+        fig2 <- plot_ly(selectedClusterData,
+                        x = eval(parse(text = paste0("selectedClusterData$",input$xcol))),
+                        y = eval(parse(text = paste0("selectedClusterData$",input$ycol))),
+                        mode = "markers",
+                        showlegend = FALSE,
+                        hoverinfo = "x+y+text",
+                        text = paste("Cluster:", selectedClusterData$cluster),
+                        marker = list(opacity = 0.4,
+                                      color = selectedClusterData$color,
+                                      size = 12,
+                                      line = list(color = "#262626", width = 1)))
+        
+        fig2
     })
     
     

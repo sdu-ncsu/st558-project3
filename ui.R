@@ -21,7 +21,7 @@ air <- read_delim("Chicago.csv", delim = ",") %>% select(-c(X, city, date, time,
 shinyUI(fluidPage(
 
     # Application title
-    titlePanel("Death in Chicago"),
+    titlePanel(HTML("<h2>Death in <a href='https://en.wikipedia.org/wiki/Chicago'><strong><i>Chicago</i></strong></a></h2>")),
 
     tabsetPanel(
         tabPanel("Introduction", fluid = TRUE,
@@ -75,7 +75,7 @@ shinyUI(fluidPage(
                      ),
                      
                      mainPanel(fluidRow(
-                         plotOutput('plot1')
+                         plotlyOutput(outputId = "plot1Plotly")
                          
                      )
                      )
