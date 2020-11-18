@@ -3,12 +3,6 @@ ST558 Project 3
 Shuang Du
 11/18/2020
 
-## The following libraries are required to run this project
-
-``` r
-library(dplyr)
-```
-
 ## The following libraries are used in the project
 
 ``` r
